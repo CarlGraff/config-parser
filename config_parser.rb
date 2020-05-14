@@ -1,9 +1,26 @@
 #
 # Configuration File Parser / Accessor
 #
-class CfgParser
+
+class ConfigParser
+    @cfg_hash = {}   
+
     def initialize(cfg_file)
-        @cfg_hash = {}   
+        @cfg_hash = init_hash(cfg_file)    
+    end
+
+    def get(key)
+        @cfg_hash[key]
+    end
+
+    def all
+        @cfg_hash
+    end
+
+    private
+
+    def init_hash(cfg_file)
+        cfg_hash = {}
         File.foreach(cfg_file) do |line|
             line = line.lstrip.chomp
             if line.chr != '#' && line.include?('=')
@@ -22,20 +39,52 @@ class CfgParser
                         val = val.to_f
                 end
                 # add hash kv for current line
-                @cfg_hash[key] = val
+                cfg_hash[key] = val
             end
         end
+        cfg_hash
     end
-    
-    def get_val(key)
-        @cfg_hash[key]
-    end
- end
+end
 
 # create parser object
-cfg_parser = CfgParser.new('test.cfg')
+cfg_parser = ConfigParser.new('test.cfg')
 
-# tests
-p cfg_parser
-p cfg_parser.get_val('log_file_path')
-p cfg_parser.get_val('test_mode')
+# sample calls
+p cfg_parser.all.length
+p cfg_parser.get('log_file_path')
+p cfg_parser.get('test_mode')
+
+# unit testing
+require 'minitest/autorun'
+
+class TestConfigParser < MiniTest::Test
+  def setup
+    @cfg_parser = ConfigParser.new('test.cfg') 
+  end
+
+  def test_has_nine
+    assert_equal 9, @cfg_parser.all.length
+  end
+
+  def test_returns_string
+    assert_equal "/tmp/logfile.log", @cfg_parser.get('log_file_path')
+  end
+
+  def test_returns_bool_true
+    assert @cfg_parser.get('test_mode')
+  end
+
+  def test_returns_bool_false
+    refute @cfg_parser.get('debug_mode')
+  end
+
+  def test_returns_int
+    assert @cfg_parser.get('server_id').is_a? Integer
+  end
+
+  def test_returns_float
+    assert @cfg_parser.get('server_load_alarm').is_a? Float
+  end
+
+end
+
