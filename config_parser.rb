@@ -2,48 +2,50 @@
 # Configuration File Parser / Accessor
 #
 
+# ConfigParser
 class ConfigParser
-    @cfg_hash = {}   
+  @config = {}
 
-    def initialize(cfg_file)
-        @cfg_hash = init_hash(cfg_file)    
-    end
+  def initialize(cfg_file)
+    @config = init_config(cfg_file)
+  end
 
-    def get(key)
-        @cfg_hash[key]
-    end
+  def get(key)
+    @config[key]
+  end
 
-    def all
-        @cfg_hash
-    end
+  def all
+    @config
+  end
 
-    private
+  private
 
-    def init_hash(cfg_file)
-        cfg_hash = {}
-        File.foreach(cfg_file) do |line|
-            line = line.lstrip.chomp
-            if line.chr != '#' && line.include?('=')
-                kv = line.split('=',2)
-                key = kv[0].strip
-                val = kv[1].strip
-                # convert string val to appropriate type
-                case
-                    when ['on', 'yes', 'true'].include?(val.downcase)
-                        val = true
-                    when ['off', 'no', 'flase'].include?(val.downcase)
-                        val = false
-                    when Integer(val, exception: false)
-                        val = val.to_i
-                    when Float(val, exception: false)
-                        val = val.to_f
-                end
-                # add hash kv for current line
-                cfg_hash[key] = val
-            end
+  def init_config(cfg_file)
+    config = {}
+    
+    File.foreach(cfg_file) do |line|
+      line = line.lstrip.chomp
+      if line.chr != '#' && line.include?('=')
+        kv = line.split('=', 2)
+        key = kv[0].strip
+        val = kv[1].strip
+        # convert string val to appropriate type
+        if %w[on yes true].include?(val.downcase)
+          val = true
+        elsif %w[off no flase].include?(val.downcase)
+          val = false
+        elsif Integer(val, exception: false)
+          val = val.to_i
+        elsif Float(val, exception: false)
+          val = val.to_f
         end
-        cfg_hash
+        # add hash kv for current line
+        config[key] = val
+      end
     end
+
+    config
+  end
 end
 
 # create parser object
@@ -59,7 +61,7 @@ require 'minitest/autorun'
 
 class TestConfigParser < MiniTest::Test
   def setup
-    @cfg_parser = ConfigParser.new('test.cfg') 
+    @cfg_parser = ConfigParser.new('test.cfg')
   end
 
   def test_has_nine
@@ -67,7 +69,7 @@ class TestConfigParser < MiniTest::Test
   end
 
   def test_returns_string
-    assert_equal "/tmp/logfile.log", @cfg_parser.get('log_file_path')
+    assert_equal '/tmp/logfile.log', @cfg_parser.get('log_file_path')
   end
 
   def test_returns_bool_true
@@ -85,6 +87,4 @@ class TestConfigParser < MiniTest::Test
   def test_returns_float
     assert @cfg_parser.get('server_load_alarm').is_a? Float
   end
-
 end
-

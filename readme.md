@@ -1,10 +1,10 @@
-# CfgParser:
-Reads the contents of an external config file and parses it into a hash object when intitialized.
-After it is initialized the get_value method can be used to access the value of one of the keys.
-Sample call is:
+# ConfigParser:
+Reads the contents of an external config file and parses it into a hash object when intitialized. After it is initialized the get_value method can be used to access the value of one of the keys.
+Sample calls:
 ```ruby
-    cfg_parser = CfgParse.new('test.cfg')
-    cfg_parser.get_val('some_key')
+    config = CfgParse.new('test.cfg')
+    config.get('some_key')
+    config.all
 ```
 ## Installation:
 Clone this repo locally
